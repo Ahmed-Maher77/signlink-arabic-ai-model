@@ -7,15 +7,30 @@ const VIDEO_HEIGHT = 480;
 function SignLanguageTranslator() {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    const progressFillRef = useRef(null);
-    const delayFillRef = useRef(null);
     const [topPrediction, setTopPrediction] = useState("N/A");
     const [correctedSentence, setCorrectedSentence] = useState("");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cameraStarted, setCameraStarted] = useState(false);
-    const [frameCount, setFrameCount] = useState(0);
-    const [lastResponseTime, setLastResponseTime] = useState(null);
+
+    // Progress bar Logic
+    const [progress, setProgress] = useState({
+        bufferPercentage: 0,
+        delay: false,
+        delayProgress: 0,
+        queueSize: 0,
+        targetSize: 30, // Target buffer size
+    });
+
+    const scaledBuffer = (progress.bufferPercentage * 2) / 3;
+    const scaledDelay = (progress.delayProgress * 100) / 3;
+    const bufferWidth = progress.delay ? 0 : scaledBuffer;
+    const delayWidth = progress.delay ? scaledDelay : 33.33;
+    const progressText = progress.delay
+        ? `0% (0/${progress.targetSize})`
+        : `${Math.round(progress.bufferPercentage)}% (${progress.queueSize}/${
+              progress.targetSize
+          })`;
 
     const startCamera = () => {
         console.log("Starting camera with MediaPipe...");
@@ -44,8 +59,17 @@ function SignLanguageTranslator() {
                 const data = JSON.parse(event.data);
                 console.log("Received data:", data);
 
-                // Update delay bar based on response time
-                setLastResponseTime(Date.now());
+                // Update progress state based on response
+                setProgress((prev) => ({
+                    ...prev,
+                    delay: false,
+                    delayProgress: 0,
+                    queueSize: Math.max(0, prev.queueSize - 1),
+                    bufferPercentage: Math.max(
+                        0,
+                        ((prev.queueSize - 1) / prev.targetSize) * 100
+                    ),
+                }));
 
                 if (
                     data.top_k_predictions &&
@@ -121,8 +145,18 @@ function SignLanguageTranslator() {
                 // Send keypoints to server
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(JSON.stringify(keypoints));
-                    // Update frame count for progress bar
-                    setFrameCount((prev) => prev + 1);
+                    // Update progress state for frame sent
+                    setProgress((prev) => ({
+                        ...prev,
+                        queueSize: Math.min(
+                            prev.targetSize,
+                            prev.queueSize + 1
+                        ),
+                        bufferPercentage: Math.min(
+                            100,
+                            ((prev.queueSize + 1) / prev.targetSize) * 100
+                        ),
+                    }));
                 }
             });
 
@@ -167,27 +201,21 @@ function SignLanguageTranslator() {
         if (!cameraStarted) return;
 
         const interval = setInterval(() => {
-            // Progress bar: Show frame processing activity (0-100% cycle)
-            const progressPercent = (frameCount % 30) * (100 / 30); // Cycle every 30 frames
-            if (progressFillRef.current) {
-                progressFillRef.current.style.width = `${progressPercent}%`;
+            // Update delay progress if no recent response
+            if (progress.queueSize > 0) {
+                setProgress((prev) => ({
+                    ...prev,
+                    delay: true,
+                    delayProgress: Math.min(100, prev.delayProgress + 2),
+                }));
             }
 
-            // Delay bar: Show time since last response (0-100% based on 2 second max)
-            if (lastResponseTime) {
-                const timeSinceResponse = Date.now() - lastResponseTime;
-                const delayPercent = Math.min(
-                    (timeSinceResponse / 2000) * 100,
-                    100
-                );
-                if (delayFillRef.current) {
-                    delayFillRef.current.style.width = `${delayPercent}%`;
-                }
-            }
+            // Progress bars are now updated via state-based calculations
+            // No need for direct DOM manipulation
         }, 100);
 
         return () => clearInterval(interval);
-    }, [cameraStarted, frameCount, lastResponseTime]);
+    }, [cameraStarted, bufferWidth, delayWidth]);
 
     if (error) {
         return (
@@ -420,24 +448,22 @@ function SignLanguageTranslator() {
                             }}
                         >
                             <div
-                                ref={progressFillRef}
                                 style={{
                                     position: "absolute",
                                     top: 0,
                                     left: "33.33%",
-                                    width: "0%",
+                                    width: `${bufferWidth}%`,
                                     height: "100%",
                                     backgroundColor: "#17a2b8",
                                     transition: "none",
                                 }}
                             />
                             <div
-                                ref={delayFillRef}
                                 style={{
                                     position: "absolute",
                                     top: 0,
                                     left: 0,
-                                    width: "0%",
+                                    width: `${delayWidth}%`,
                                     height: "100%",
                                     backgroundColor: "#ffc107",
                                     transition: "none",
@@ -483,6 +509,21 @@ function SignLanguageTranslator() {
                                 }}
                             >
                                 Frame Buffer
+                            </div>
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    top: "50%",
+                                    right: "10px",
+                                    transform: "translateY(-50%)",
+                                    color: "#495057",
+                                    fontSize: "0.8em",
+                                    fontWeight: 500,
+                                    zIndex: 1,
+                                    pointerEvents: "none",
+                                }}
+                            >
+                                {progressText}
                             </div>
                         </div>
                     </div>
