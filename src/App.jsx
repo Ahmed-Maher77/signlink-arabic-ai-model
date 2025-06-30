@@ -14,6 +14,8 @@ function SignLanguageTranslator() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cameraStarted, setCameraStarted] = useState(false);
+    const [frameCount, setFrameCount] = useState(0);
+    const [lastResponseTime, setLastResponseTime] = useState(null);
 
     const startCamera = () => {
         console.log("Starting camera with MediaPipe...");
@@ -41,6 +43,9 @@ function SignLanguageTranslator() {
             try {
                 const data = JSON.parse(event.data);
                 console.log("Received data:", data);
+
+                // Update delay bar based on response time
+                setLastResponseTime(Date.now());
 
                 if (
                     data.top_k_predictions &&
@@ -116,6 +121,8 @@ function SignLanguageTranslator() {
                 // Send keypoints to server
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(JSON.stringify(keypoints));
+                    // Update frame count for progress bar
+                    setFrameCount((prev) => prev + 1);
                 }
             });
 
@@ -155,27 +162,32 @@ function SignLanguageTranslator() {
         setIsLoading(false);
     }, []);
 
-    // Animate progress and delay bars for demo
+    // Update progress bars based on real activity
     useEffect(() => {
         if (!cameraStarted) return;
-        let progressVal = 0;
-        let delayVal = 0;
-        let direction = 1;
+
         const interval = setInterval(() => {
-            progressVal = (progressVal + 2) % 101;
-            delayVal += direction * 2;
-            if (delayVal >= 100) direction = -1;
-            if (delayVal <= 0) direction = 1;
-            // Update refs directly for smoothness
+            // Progress bar: Show frame processing activity (0-100% cycle)
+            const progressPercent = (frameCount % 30) * (100 / 30); // Cycle every 30 frames
             if (progressFillRef.current) {
-                progressFillRef.current.style.width = `${progressVal}%`;
+                progressFillRef.current.style.width = `${progressPercent}%`;
             }
-            if (delayFillRef.current) {
-                delayFillRef.current.style.width = `${delayVal}%`;
+
+            // Delay bar: Show time since last response (0-100% based on 2 second max)
+            if (lastResponseTime) {
+                const timeSinceResponse = Date.now() - lastResponseTime;
+                const delayPercent = Math.min(
+                    (timeSinceResponse / 2000) * 100,
+                    100
+                );
+                if (delayFillRef.current) {
+                    delayFillRef.current.style.width = `${delayPercent}%`;
+                }
             }
-        }, 50);
+        }, 100);
+
         return () => clearInterval(interval);
-    }, [cameraStarted]);
+    }, [cameraStarted, frameCount, lastResponseTime]);
 
     if (error) {
         return (
