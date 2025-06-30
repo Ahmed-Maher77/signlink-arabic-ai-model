@@ -155,6 +155,28 @@ function SignLanguageTranslator() {
         setIsLoading(false);
     }, []);
 
+    // Animate progress and delay bars for demo
+    useEffect(() => {
+        if (!cameraStarted) return;
+        let progressVal = 0;
+        let delayVal = 0;
+        let direction = 1;
+        const interval = setInterval(() => {
+            progressVal = (progressVal + 2) % 101;
+            delayVal += direction * 2;
+            if (delayVal >= 100) direction = -1;
+            if (delayVal <= 0) direction = 1;
+            // Update refs directly for smoothness
+            if (progressFillRef.current) {
+                progressFillRef.current.style.width = `${progressVal}%`;
+            }
+            if (delayFillRef.current) {
+                delayFillRef.current.style.width = `${delayVal}%`;
+            }
+        }, 50);
+        return () => clearInterval(interval);
+    }, [cameraStarted]);
+
     if (error) {
         return (
             <div
