@@ -256,7 +256,29 @@ function SignLanguageTranslator() {
     const scaledBuffer = (progress.bufferPercentage * 2) / 3;
     const scaledDelay = (progress.delayProgress * 33.33) / 100;
     const bufferWidth = progress.delay ? 0 : scaledBuffer;
-    const delayWidth = progress.delay ? scaledDelay : 0;
+    const delayWidth = progress.delayProgress > 0 ? scaledDelay : 0;
+
+    // Debug logging for progress bar calculations
+    useEffect(() => {
+        console.log("Progress Bar Debug:", {
+            bufferPercentage: progress.bufferPercentage,
+            delayProgress: progress.delayProgress,
+            delay: progress.delay,
+            scaledBuffer,
+            scaledDelay,
+            bufferWidth,
+            delayWidth,
+        });
+    }, [
+        progress.bufferPercentage,
+        progress.delayProgress,
+        progress.delay,
+        scaledBuffer,
+        scaledDelay,
+        bufferWidth,
+        delayWidth,
+    ]);
+
     const progressText = progress.delay
         ? `${statusMessage} (${progress.queueSize}/${progress.targetSize})`
         : `${Math.round(progress.bufferPercentage)}% (${progress.queueSize}/${
