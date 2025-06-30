@@ -11,79 +11,137 @@ function SignLanguageTranslator() {
     const delayFillRef = useRef(null);
     const [topPrediction, setTopPrediction] = useState("N/A");
     const [correctedSentence, setCorrectedSentence] = useState("");
-    const [progressText, setProgressText] = useState("0% (Q: 0/0)");
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cameraStarted, setCameraStarted] = useState(false);
 
     const startCamera = () => {
-        console.log("Starting camera...");
+        console.log("Starting camera with MediaPipe...");
         if (!videoRef.current) {
             console.log("Video ref not available");
             return;
         }
 
-        navigator.mediaDevices
-            .getUserMedia({
-                video: {
-                    width: VIDEO_WIDTH,
-                    height: VIDEO_HEIGHT,
+        if (!window.Holistic || !window.Camera) {
+            setError(
+                "MediaPipe libraries are not loaded. Please refresh the page."
+            );
+            return;
+        }
+
+        // WebSocket setup
+        const wsUrl = `ws://${window.location.hostname || "localhost"}:8000/ws`;
+        let socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+            console.log("WebSocket connected");
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log("Received data:", data);
+
+                if (
+                    data.top_k_predictions &&
+                    data.top_k_predictions.length > 0
+                ) {
+                    const topPred = data.top_k_predictions[0];
+                    setTopPrediction(
+                        `${topPred.label} (${topPred.probability.toFixed(2)}%)`
+                    );
+                }
+
+                if (data.corrected_sentence_text !== undefined) {
+                    setCorrectedSentence(data.corrected_sentence_text);
+                }
+            } catch (e) {
+                console.error("Error processing message:", e);
+            }
+        };
+
+        socket.onerror = (err) => {
+            console.error("WebSocket error:", err);
+        };
+
+        socket.onclose = (event) => {
+            console.log("WebSocket disconnected:", event.reason);
+        };
+
+        // MediaPipe Holistic setup
+        try {
+            console.log("Creating Holistic instance...");
+            const holistic = new window.Holistic({
+                locateFile: (file) => {
+                    console.log("Loading MediaPipe file:", file);
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic/${file}`;
                 },
-            })
-            .then((stream) => {
-                console.log("Camera stream obtained:", stream);
-                videoRef.current.srcObject = stream;
-                setCameraStarted(true);
-
-                // Connect WebSocket
-                const wsUrl = `ws://${
-                    window.location.hostname || "localhost"
-                }:8000/ws`;
-                const socket = new WebSocket(wsUrl);
-
-                socket.onopen = () => {
-                    console.log("WebSocket connected");
-                };
-
-                socket.onmessage = (event) => {
-                    try {
-                        const data = JSON.parse(event.data);
-                        console.log("Received data:", data);
-
-                        if (
-                            data.top_k_predictions &&
-                            data.top_k_predictions.length > 0
-                        ) {
-                            const topPred = data.top_k_predictions[0];
-                            setTopPrediction(
-                                `${
-                                    topPred.label
-                                } (${topPred.probability.toFixed(2)}%)`
-                            );
-                        }
-
-                        if (data.corrected_sentence_text !== undefined) {
-                            setCorrectedSentence(data.corrected_sentence_text);
-                        }
-                    } catch (e) {
-                        console.error("Error processing message:", e);
-                    }
-                };
-
-                socket.onerror = (err) => {
-                    console.error("WebSocket error:", err);
-                };
-
-                socket.onclose = (event) => {
-                    console.log("WebSocket disconnected:", event.reason);
-                };
-            })
-            .catch((err) => {
-                console.error("Camera access failed:", err);
-                setError(
-                    "Camera access denied. Please allow camera permissions."
-                );
             });
+
+            console.log("Setting Holistic options...");
+            holistic.setOptions({
+                modelComplexity: 1,
+                smoothLandmarks: true,
+                enableSegmentation: false,
+                minDetectionConfidence: 0.5,
+                minTrackingConfidence: 0.5,
+            });
+
+            console.log("Setting Holistic onResults...");
+            holistic.onResults((results) => {
+                // Extract keypoints
+                const pose = results.poseLandmarks
+                    ? results.poseLandmarks.flatMap((res) => [
+                          res.x,
+                          res.y,
+                          res.z,
+                      ])
+                    : Array(33 * 3).fill(0);
+                const lh = results.leftHandLandmarks
+                    ? results.leftHandLandmarks.flatMap((res) => [
+                          res.x,
+                          res.y,
+                          res.z,
+                      ])
+                    : Array(21 * 3).fill(0);
+                const rh = results.rightHandLandmarks
+                    ? results.rightHandLandmarks.flatMap((res) => [
+                          res.x,
+                          res.y,
+                          res.z,
+                      ])
+                    : Array(21 * 3).fill(0);
+                const keypoints = [...pose, ...lh, ...rh];
+
+                // Send keypoints to server
+                if (socket.readyState === WebSocket.OPEN) {
+                    socket.send(JSON.stringify(keypoints));
+                }
+            });
+
+            console.log("Creating Camera instance...");
+            const camera = new window.Camera(videoRef.current, {
+                onFrame: async () => {
+                    try {
+                        await holistic.send({ image: videoRef.current });
+                    } catch (frameError) {
+                        console.error("Error processing frame:", frameError);
+                    }
+                },
+                width: VIDEO_WIDTH,
+                height: VIDEO_HEIGHT,
+            });
+
+            console.log("Starting camera...");
+            camera.start();
+            setCameraStarted(true);
+            console.log("Camera with MediaPipe started successfully");
+        } catch (err) {
+            console.error("Error initializing MediaPipe:", err);
+            setError(
+                "Failed to initialize MediaPipe. Please refresh the page."
+            );
+        }
     };
 
     useEffect(() => {
@@ -229,8 +287,7 @@ function SignLanguageTranslator() {
                             fontSize: "14px",
                         }}
                     >
-                        Click to start camera (Simple mode - no MediaPipe
-                        processing)
+                        Click to start camera with MediaPipe processing
                     </p>
                 </div>
             )}
@@ -473,18 +530,6 @@ function SignLanguageTranslator() {
                         </span>
                     </div>
                 </div>
-            </div>
-
-            <div
-                style={{
-                    textAlign: "center",
-                    marginTop: "5px",
-                    fontSize: "0.9em",
-                    color: "#495057",
-                    fontWeight: 500,
-                }}
-            >
-                {progressText}
             </div>
         </div>
     );
