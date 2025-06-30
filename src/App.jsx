@@ -4,6 +4,232 @@ import "./App.css";
 const VIDEO_WIDTH = 640;
 const VIDEO_HEIGHT = 480;
 
+// Styles object
+const styles = {
+    container: {
+        fontFamily:
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        margin: 0,
+        padding: "20px",
+        backgroundColor: "#f4f6f8",
+        color: "#333",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        minHeight: "100vh",
+        lineHeight: 1.6,
+        boxSizing: "border-box",
+    },
+    title: {
+        marginBottom: "20px",
+        color: "#2c3e50",
+        fontWeight: 300,
+        textAlign: "center",
+        width: "100%",
+    },
+    buttonContainer: {
+        marginBottom: "20px",
+        textAlign: "center",
+    },
+    startButton: {
+        padding: "10px 20px",
+        backgroundColor: "#17a2b8",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontSize: "16px",
+    },
+    buttonText: {
+        marginTop: "10px",
+        color: "#6c757d",
+        fontSize: "14px",
+    },
+    statusContainer: {
+        marginBottom: "20px",
+        textAlign: "center",
+    },
+    statusBadge: {
+        padding: "8px 16px",
+        backgroundColor: "#d4edda",
+        color: "#155724",
+        borderRadius: "6px",
+        display: "inline-block",
+    },
+    mainLayout: {
+        display: "flex",
+        flexDirection: "row",
+        gap: "25px",
+        width: "100%",
+        maxWidth: "1200px",
+    },
+    videoContainer: {
+        flex: 2,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        minWidth: 0,
+    },
+    videoWrapper: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        backgroundColor: "#ffffff",
+        padding: "20px",
+        borderRadius: "12px",
+        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+        width: "100%",
+    },
+    videoFrame: {
+        position: "relative",
+        width: "100%",
+        paddingTop: "75%",
+        backgroundColor: "#000",
+        marginBottom: "15px",
+        borderRadius: "8px",
+        overflow: "hidden",
+        boxShadow: "inset 0 1px 3px rgba(0,0,0,0.1)",
+    },
+    video: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        display: "block",
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        transform: "scaleX(-1)",
+    },
+    canvas: {
+        display: "none",
+    },
+    progressBarContainer: {
+        width: "100%",
+        height: "28px",
+        backgroundColor: "#e9ecef",
+        borderRadius: "6px",
+        overflow: "hidden",
+        marginTop: "10px",
+        position: "relative",
+    },
+    bufferBar: {
+        position: "absolute",
+        top: 0,
+        left: "33.33%",
+        height: "100%",
+        backgroundColor: "#17a2b8",
+        transition: "none",
+    },
+    delayBar: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        height: "100%",
+        backgroundColor: "#ffc107",
+        transition: "none",
+    },
+    dividerLine: {
+        position: "absolute",
+        top: 0,
+        left: "33.33%",
+        width: "2px",
+        height: "100%",
+        backgroundColor: "#000",
+        zIndex: 2,
+    },
+    delayLabel: {
+        position: "absolute",
+        top: "50%",
+        left: "16.67%",
+        transform: "translate(-50%, -50%)",
+        color: "#495057",
+        fontSize: "0.9em",
+        fontWeight: 500,
+        zIndex: 1,
+        pointerEvents: "none",
+    },
+    frameBufferLabel: {
+        position: "absolute",
+        top: "50%",
+        left: "66.67%",
+        transform: "translate(-50%, -50%)",
+        color: "#495057",
+        fontSize: "0.9em",
+        fontWeight: 500,
+        zIndex: 1,
+        pointerEvents: "none",
+    },
+    progressText: {
+        position: "absolute",
+        top: "50%",
+        right: "10px",
+        transform: "translateY(-50%)",
+        color: "#495057",
+        fontSize: "0.8em",
+        fontWeight: 500,
+        zIndex: 1,
+        pointerEvents: "none",
+    },
+    sidebar: {
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        gap: "15px",
+        minWidth: "320px",
+        maxWidth: "400px",
+    },
+    infoCard: {
+        padding: "12px",
+        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+        marginBottom: "15px",
+        borderLeft: "4px solid #17a2b8",
+        backgroundColor: "#f8f9fa",
+        borderRadius: "0 6px 6px 0",
+    },
+    cardTitle: {
+        display: "block",
+        marginBottom: "5px",
+        color: "#343a40",
+        fontSize: "0.95em",
+    },
+    cardContent: {
+        color: "#495057",
+        wordWrap: "break-word",
+        fontSize: "1em",
+        display: "block",
+        minHeight: "1.2em",
+    },
+    errorContainer: {
+        backgroundColor: "#f8d7da",
+        border: "1px solid #f5c6cb",
+        color: "#721c24",
+        padding: "12px 20px",
+        borderRadius: "6px",
+        maxWidth: "400px",
+    },
+    loadingContainer: {
+        backgroundColor: "#ffffff",
+        padding: "32px",
+        borderRadius: "12px",
+        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+        maxWidth: "400px",
+        textAlign: "center",
+    },
+    spinner: {
+        width: "48px",
+        height: "48px",
+        border: "2px solid #e3e3e3",
+        borderTop: "2px solid #17a2b8",
+        borderRadius: "50%",
+        animation: "spin 1s linear infinite",
+        margin: "0 auto 16px",
+    },
+    loadingText: {
+        color: "#495057",
+        margin: 0,
+    },
+};
+
 function SignLanguageTranslator() {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
@@ -12,6 +238,7 @@ function SignLanguageTranslator() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [cameraStarted, setCameraStarted] = useState(false);
+    const [statusMessage, setStatusMessage] = useState("");
 
     // Progress bar Logic
     const [progress, setProgress] = useState({
@@ -27,7 +254,7 @@ function SignLanguageTranslator() {
     const bufferWidth = progress.delay ? 0 : scaledBuffer;
     const delayWidth = progress.delay ? scaledDelay : 0;
     const progressText = progress.delay
-        ? `0% (0/${progress.targetSize})`
+        ? `${statusMessage} (${progress.queueSize}/${progress.targetSize})`
         : `${Math.round(progress.bufferPercentage)}% (${progress.queueSize}/${
               progress.targetSize
           })`;
@@ -59,17 +286,20 @@ function SignLanguageTranslator() {
                 const data = JSON.parse(event.data);
                 console.log("Received data:", data);
 
-                // Update progress state based on response
+                // Update progress state based on real server response
                 setProgress((prev) => ({
                     ...prev,
-                    delay: false,
-                    delayProgress: 0,
-                    queueSize: Math.max(0, prev.queueSize - 1),
-                    bufferPercentage: Math.max(
-                        0,
-                        ((prev.queueSize - 1) / prev.targetSize) * 100
-                    ),
+                    bufferPercentage: data.buffer_fill_percentage || 0,
+                    queueSize: data.input_queue_actual_size || 0,
+                    targetSize: data.input_queue_target_clip_size || 30,
+                    delay: data.is_in_delay || false,
+                    delayProgress: data.delay_progress || 0,
                 }));
+
+                // Update status message
+                if (data.status_message) {
+                    setStatusMessage(data.status_message);
+                }
 
                 if (
                     data.top_k_predictions &&
@@ -145,18 +375,7 @@ function SignLanguageTranslator() {
                 // Send keypoints to server
                 if (socket.readyState === WebSocket.OPEN) {
                     socket.send(JSON.stringify(keypoints));
-                    // Update progress state for frame sent
-                    setProgress((prev) => ({
-                        ...prev,
-                        queueSize: Math.min(
-                            prev.targetSize,
-                            prev.queueSize + 1
-                        ),
-                        bufferPercentage: Math.min(
-                            100,
-                            ((prev.queueSize + 1) / prev.targetSize) * 100
-                        ),
-                    }));
+                    // Progress state is now updated by server response
                 }
             });
 
@@ -196,411 +415,110 @@ function SignLanguageTranslator() {
         setIsLoading(false);
     }, []);
 
-    // Update progress bars based on real activity
+    // Progress bars are now updated via server response data
     useEffect(() => {
         if (!cameraStarted) return;
 
-        const interval = setInterval(() => {
-            // Update delay progress if no recent response
-            if (progress.queueSize > 0) {
-                setProgress((prev) => ({
-                    ...prev,
-                    delay: true,
-                    delayProgress: Math.min(100, prev.delayProgress + 2),
-                }));
-            }
-
-            // Progress bars are now updated via state-based calculations
-            // No need for direct DOM manipulation
-        }, 100);
-
-        return () => clearInterval(interval);
-    }, [cameraStarted, bufferWidth, delayWidth]);
+        // No need for manual updates - server provides real-time data
+        // Progress bars update automatically when server sends response
+    }, [cameraStarted]);
 
     if (error) {
         return (
-            <div
-                style={{
-                    fontFamily:
-                        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                    margin: 0,
-                    padding: "20px",
-                    backgroundColor: "#f4f6f8",
-                    color: "#333",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    minHeight: "100vh",
-                    lineHeight: 1.6,
-                    boxSizing: "border-box",
-                }}
-            >
-                <div
-                    style={{
-                        backgroundColor: "#f8d7da",
-                        border: "1px solid #f5c6cb",
-                        color: "#721c24",
-                        padding: "12px 20px",
-                        borderRadius: "6px",
-                        maxWidth: "400px",
-                    }}
-                >
-                    <strong>Error: </strong>
-                    <span>{error}</span>
-                </div>
+            <div style={styles.errorContainer}>
+                <strong>Error: </strong>
+                <span>{error}</span>
             </div>
         );
     }
 
     if (isLoading) {
         return (
-            <div
-                style={{
-                    fontFamily:
-                        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                    margin: 0,
-                    padding: "20px",
-                    backgroundColor: "#f4f6f8",
-                    color: "#333",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    minHeight: "100vh",
-                    lineHeight: 1.6,
-                    boxSizing: "border-box",
-                }}
-            >
-                <div
-                    style={{
-                        backgroundColor: "#ffffff",
-                        padding: "32px",
-                        borderRadius: "12px",
-                        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                        maxWidth: "400px",
-                        textAlign: "center",
-                    }}
-                >
-                    <div
-                        style={{
-                            width: "48px",
-                            height: "48px",
-                            border: "2px solid #e3e3e3",
-                            borderTop: "2px solid #17a2b8",
-                            borderRadius: "50%",
-                            animation: "spin 1s linear infinite",
-                            margin: "0 auto 16px",
-                        }}
-                    ></div>
-                    <p style={{ color: "#495057", margin: 0 }}>Loading...</p>
-                </div>
+            <div style={styles.loadingContainer}>
+                <div style={styles.spinner}></div>
+                <p style={styles.loadingText}>Loading...</p>
             </div>
         );
     }
 
     return (
-        <div
-            style={{
-                fontFamily:
-                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-                margin: 0,
-                padding: "20px",
-                backgroundColor: "#f4f6f8",
-                color: "#333",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                minHeight: "100vh",
-                lineHeight: 1.6,
-                boxSizing: "border-box",
-            }}
-        >
-            <h1
-                style={{
-                    marginBottom: "20px",
-                    color: "#2c3e50",
-                    fontWeight: 300,
-                    textAlign: "center",
-                    width: "100%",
-                }}
-            >
-                Real-time Sign Language Translation
-            </h1>
+        <div style={styles.container}>
+            <h1 style={styles.title}>Real-time Sign Language Translation</h1>
 
             {!cameraStarted && (
-                <div style={{ marginBottom: "20px", textAlign: "center" }}>
-                    <button
-                        onClick={startCamera}
-                        style={{
-                            padding: "10px 20px",
-                            backgroundColor: "#17a2b8",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            fontSize: "16px",
-                        }}
-                    >
+                <div style={styles.buttonContainer}>
+                    <button onClick={startCamera} style={styles.startButton}>
                         Start Camera
                     </button>
-                    <p
-                        style={{
-                            marginTop: "10px",
-                            color: "#6c757d",
-                            fontSize: "14px",
-                        }}
-                    >
+                    <p style={styles.buttonText}>
                         Click to start camera with MediaPipe processing
                     </p>
                 </div>
             )}
 
             {cameraStarted && (
-                <div style={{ marginBottom: "20px", textAlign: "center" }}>
-                    <div
-                        style={{
-                            padding: "8px 16px",
-                            backgroundColor: "#d4edda",
-                            color: "#155724",
-                            borderRadius: "6px",
-                            display: "inline-block",
-                        }}
-                    >
-                        ✓ Camera started
-                    </div>
+                <div style={styles.statusContainer}>
+                    <div style={styles.statusBadge}>✓ Camera started</div>
                 </div>
             )}
 
-            <div
-                style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: "25px",
-                    width: "100%",
-                    maxWidth: "1200px",
-                }}
-            >
-                <div
-                    style={{
-                        flex: 2,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        minWidth: 0,
-                    }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            backgroundColor: "#ffffff",
-                            padding: "20px",
-                            borderRadius: "12px",
-                            boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                            width: "100%",
-                        }}
-                    >
-                        <div
-                            style={{
-                                position: "relative",
-                                width: "100%",
-                                paddingTop: "75%",
-                                backgroundColor: "#000",
-                                marginBottom: "15px",
-                                borderRadius: "8px",
-                                overflow: "hidden",
-                                boxShadow: "inset 0 1px 3px rgba(0,0,0,0.1)",
-                            }}
-                        >
+            <div style={styles.mainLayout}>
+                <div style={styles.videoContainer}>
+                    <div style={styles.videoWrapper}>
+                        <div style={styles.videoFrame}>
                             <video
                                 ref={videoRef}
                                 autoPlay
                                 playsInline
                                 muted
-                                style={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: 0,
-                                    display: "block",
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                    transform: "scaleX(-1)",
-                                }}
+                                style={styles.video}
                             />
                             <canvas
                                 ref={canvasRef}
                                 width={VIDEO_WIDTH}
                                 height={VIDEO_HEIGHT}
-                                style={{ display: "none" }}
+                                style={styles.canvas}
                             />
                         </div>
 
-                        <div
-                            style={{
-                                width: "100%",
-                                height: "28px",
-                                backgroundColor: "#e9ecef",
-                                borderRadius: "6px",
-                                overflow: "hidden",
-                                marginTop: "10px",
-                                position: "relative",
-                            }}
-                        >
+                        <div style={styles.progressBarContainer}>
                             <div
                                 style={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: "33.33%",
+                                    ...styles.bufferBar,
                                     width: `${bufferWidth}%`,
-                                    height: "100%",
-                                    backgroundColor: "#17a2b8",
-                                    transition: "none",
                                 }}
                             />
                             <div
                                 style={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: 0,
+                                    ...styles.delayBar,
                                     width: `${Math.min(delayWidth, 33.33)}%`,
-                                    height: "100%",
-                                    backgroundColor: "#ffc107",
-                                    transition: "none",
                                 }}
                             />
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: "33.33%",
-                                    width: "2px",
-                                    height: "100%",
-                                    backgroundColor: "#000",
-                                    zIndex: 2,
-                                }}
-                            />
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "16.67%",
-                                    transform: "translate(-50%, -50%)",
-                                    color: "#495057",
-                                    fontSize: "0.9em",
-                                    fontWeight: 500,
-                                    zIndex: 1,
-                                    pointerEvents: "none",
-                                }}
-                            >
-                                Delay
-                            </div>
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "66.67%",
-                                    transform: "translate(-50%, -50%)",
-                                    color: "#495057",
-                                    fontSize: "0.9em",
-                                    fontWeight: 500,
-                                    zIndex: 1,
-                                    pointerEvents: "none",
-                                }}
-                            >
+                            <div style={styles.dividerLine} />
+                            <div style={styles.delayLabel}>Delay</div>
+                            <div style={styles.frameBufferLabel}>
                                 Frame Buffer
                             </div>
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    right: "10px",
-                                    transform: "translateY(-50%)",
-                                    color: "#495057",
-                                    fontSize: "0.8em",
-                                    fontWeight: 500,
-                                    zIndex: 1,
-                                    pointerEvents: "none",
-                                }}
-                            >
+                            <div style={styles.progressText}>
                                 {progressText}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div
-                    style={{
-                        flex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "15px",
-                        minWidth: "320px",
-                        maxWidth: "400px",
-                    }}
-                >
-                    <div
-                        style={{
-                            padding: "12px",
-                            boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                            marginBottom: "15px",
-                            borderLeft: "4px solid #17a2b8",
-                            backgroundColor: "#f8f9fa",
-                            borderRadius: "0 6px 6px 0",
-                        }}
-                    >
-                        <strong
-                            style={{
-                                display: "block",
-                                marginBottom: "5px",
-                                color: "#343a40",
-                                fontSize: "0.95em",
-                            }}
-                        >
+                <div style={styles.sidebar}>
+                    <div style={styles.infoCard}>
+                        <strong style={styles.cardTitle}>
                             Top Prediction:
                         </strong>
-                        <span
-                            style={{
-                                color: "#495057",
-                                wordWrap: "break-word",
-                                fontSize: "1em",
-                                display: "block",
-                                minHeight: "1.2em",
-                            }}
-                        >
-                            {topPrediction}
-                        </span>
+                        <span style={styles.cardContent}>{topPrediction}</span>
                     </div>
 
-                    <div
-                        style={{
-                            padding: "12px",
-                            boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                            marginBottom: "15px",
-                            borderLeft: "4px solid #17a2b8",
-                            backgroundColor: "#f8f9fa",
-                            borderRadius: "0 6px 6px 0",
-                        }}
-                    >
-                        <strong
-                            style={{
-                                display: "block",
-                                marginBottom: "5px",
-                                color: "#343a40",
-                                fontSize: "0.95em",
-                            }}
-                        >
+                    <div style={styles.infoCard}>
+                        <strong style={styles.cardTitle}>
                             Corrected Sentence:
                         </strong>
-                        <span
-                            style={{
-                                color: "#495057",
-                                wordWrap: "break-word",
-                                fontSize: "1em",
-                                display: "block",
-                                minHeight: "1.2em",
-                            }}
-                        >
+                        <span style={styles.cardContent}>
                             {correctedSentence}
                         </span>
                     </div>
