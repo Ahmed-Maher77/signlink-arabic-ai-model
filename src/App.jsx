@@ -249,6 +249,10 @@ function SignLanguageTranslator() {
         targetSize: 30, // Target buffer size
     });
 
+    useEffect(() => {
+        console.log("Delay Progress:", progress.delayProgress);
+    }, [progress.delayProgress]);
+
     const scaledBuffer = (progress.bufferPercentage * 2) / 3;
     const scaledDelay = (progress.delayProgress * 33.33) / 100;
     const bufferWidth = progress.delay ? 0 : scaledBuffer;
