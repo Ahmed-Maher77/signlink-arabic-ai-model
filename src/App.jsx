@@ -23,9 +23,9 @@ function SignLanguageTranslator() {
     });
 
     const scaledBuffer = (progress.bufferPercentage * 2) / 3;
-    const scaledDelay = (progress.delayProgress * 100) / 3;
+    const scaledDelay = (progress.delayProgress * 33.33) / 100;
     const bufferWidth = progress.delay ? 0 : scaledBuffer;
-    const delayWidth = progress.delay ? scaledDelay : 33.33;
+    const delayWidth = progress.delay ? scaledDelay : 0;
     const progressText = progress.delay
         ? `0% (0/${progress.targetSize})`
         : `${Math.round(progress.bufferPercentage)}% (${progress.queueSize}/${
@@ -463,7 +463,7 @@ function SignLanguageTranslator() {
                                     position: "absolute",
                                     top: 0,
                                     left: 0,
-                                    width: `${delayWidth}%`,
+                                    width: `${Math.min(delayWidth, 33.33)}%`,
                                     height: "100%",
                                     backgroundColor: "#ffc107",
                                     transition: "none",
