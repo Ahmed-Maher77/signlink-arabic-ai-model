@@ -233,6 +233,8 @@ const styles = {
 function SignLanguageTranslator() {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const offscreenCanvasRef = useRef(null);
+    const offscreenCtxRef = useRef(null);
     const [topPrediction, setTopPrediction] = useState("N/A");
     const [correctedSentence, setCorrectedSentence] = useState("");
     const [isLoading, setIsLoading] = useState(true);
@@ -406,10 +408,32 @@ function SignLanguageTranslator() {
             });
 
             console.log("Creating Camera instance...");
+
+            // Create offscreen canvas for mirroring
+            const offscreenCanvas = document.createElement("canvas");
+            offscreenCanvas.width = VIDEO_WIDTH;
+            offscreenCanvas.height = VIDEO_HEIGHT;
+            const offscreenCtx = offscreenCanvas.getContext("2d");
+
+            // Store references
+            offscreenCanvasRef.current = offscreenCanvas;
+            offscreenCtxRef.current = offscreenCtx;
+
             const camera = new window.Camera(videoRef.current, {
                 onFrame: async () => {
                     try {
-                        await holistic.send({ image: videoRef.current });
+                        // Mirror the video frame before sending to MediaPipe
+                        offscreenCtx.save();
+                        offscreenCtx.scale(-1, 1);
+                        offscreenCtx.drawImage(
+                            videoRef.current,
+                            -VIDEO_WIDTH,
+                            0,
+                            VIDEO_WIDTH,
+                            VIDEO_HEIGHT
+                        );
+                        offscreenCtx.restore();
+                        await holistic.send({ image: offscreenCanvas });
                     } catch (frameError) {
                         console.error("Error processing frame:", frameError);
                     }
