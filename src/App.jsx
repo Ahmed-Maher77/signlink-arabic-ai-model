@@ -254,7 +254,7 @@ function SignLanguageTranslator() {
     }, [progress.delayProgress]);
 
     const scaledBuffer = (progress.bufferPercentage * 2) / 3;
-    const scaledDelay = (progress.delayProgress * 33.33) / 100;
+    const scaledDelay = progress.delayProgress * 33.33;
     const bufferWidth = progress.delay ? 0 : scaledBuffer;
     const delayWidth = progress.delayProgress > 0 ? scaledDelay : 0;
 
